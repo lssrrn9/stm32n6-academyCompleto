@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a1a">
+<title>STM32N6 Industrial Academy</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#252525;--border:#333;--text:#e0e0e0;--text2:#a0a0a0;--orange:#ff6b35;--green:#00c853;--blue:#2979ff}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.sidebar{width:260px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.logo{height:64px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border);gap:12px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--orange),var(--green));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+.nav{flex:1;padding:16px 12px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:10px;cursor:pointer;margin-bottom:4px;text-decoration:none;color:var(--text);border:none;background:none;width:100%;font-size:inherit;font-family:inherit}
+.nav-item:hover{background:var(--bg3)}
+.nav-item.active{background:rgba(255,107,53,.12);color:var(--orange);border-left:3px solid var(--orange)}
+.nav-icon{font-size:1.1rem;width:22px;text-align:center}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.header{height:64px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.content{flex:1;overflow-y:auto;padding:24px}
+.page{display:none;animation:fade .4s}
+.page.active{display:block}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+h1{font-size:1.6rem;margin-bottom:8px;background:linear-gradient(90deg,var(--text),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:.3s}
+.card:hover{border-color:var(--orange);transform:translateY(-2px)}
+.card h3{color:var(--orange);margin-bottom:8px;font-size:1.05rem}
+.card p{color:var(--text2);font-size:.85rem;line-height:1.5}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;margin-top:8px}
+.b-green{background:rgba(0,200,83,.15);color:var(--green)}
+.b-orange{background:rgba(255,107,53,.15);color:var(--orange)}
+.b-blue{background:rgba(41,121,255,.15);color:var(--blue)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:12px}
+.stat-icon{font-size:1.6rem}
+.stat-val{font-size:1.3rem;font-weight:700}
+.stat-label{font-size:.7rem;color:#666;text-transform:uppercase;margin-top:2px}
+.sim-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.sim-box h3{color:var(--orange);margin-bottom:12px}
+.sensor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.sensor-card{background:var(--bg3);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border)}
+.sensor-val{font-size:1.6rem;font-weight:700;color:var(--green);margin:6px 0}
+.sensor-label{font-size:.75rem;color:#666}
+.btn{background:var(--orange);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;margin-top:12px;font-size:.9rem}
+.btn:hover{opacity:.9}
+.console{background:#000;color:var(--green);font-family:'Courier New',monospace;padding:12px;border-radius:8px;font-size:.8rem;min-height:80px;white-space:pre-wrap;margin-top:12px;overflow-y:auto;max-height:150px}
+.footer{height:40px;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:.75rem;color:#666}
+.trend{display:flex;align-items:flex-end;gap:4px;height:60px;margin-top:12px}
+.trend-bar{width:8px;background:var(--green);border-radius:2px;transition:.3s}
+@media(max-width:768px){.sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);z-index:100;width:260px}.sidebar.open{transform:translateX(0)}.mobile-btn{display:flex!important}.grid{grid-template-columns:1fr}}
+.mobile-btn{display:none;width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);align-items:center;justify-content:center;cursor:pointer;margin-right:12px;font-size:1.2rem}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo"><div class="logo-icon">N6</div><div style="font-weight:700">STM32N6 Academy</div></div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="show('fundamentos',this)"><span class="nav-icon">📐</span>Fundamentos</button>
+      <button class="nav-item" onclick="show('sensores',this)"><span class="nav-icon">📡</span>Sensores</button>
+      <button class="nav-item" onclick="show('comunicaciones',this)"><span class="nav-icon">🔌</span>Comunicaciones</button>
+      <button class="nav-item" onclick="show('edgeai',this)"><span class="nav-icon">🧠</span>Edge AI</button>
+      <div style="margin:12px 0;border-top:1px solid var(--border)"></div>
+      <button class="nav-item" onclick="show('simsensores',this)"><span class="nav-icon">🧪</span>Sim. Sensores</button>
+      <button class="nav-item" onclick="show('simmodbus',this)"><span class="nav-icon">🔧</span>Sim. Modbus</button>
+      <button class="nav-item" onclick="show('dashboard',this)"><span class="nav-icon">📊</span>Dashboard</button>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="header">
+      <div style="display:flex;align-items:center">
+        <button class="mobile-btn" onclick="toggleSidebar()">☰</button>
+        <div style="font-weight:600" id="pageTitle">Fundamentos STM32N6</div>
+      </div>
+      <div style="font-size:.75rem;color:#666">v1.0.0 | GitHub Pages</div>
+    </div>
+
+    <div class="content">
+
+      <!-- FUNDAMENTOS -->
+      <div class="page active" id="fundamentos">
+        <h1>Fundamentos STM32N6</h1>
+        <p>Arquitectura Cortex-M55, periféricos esenciales, herramientas de desarrollo y primeros pasos con el ecosistema ST.</p>
+        <div class="stats">
+          <div class="stat"><div class="stat-icon">📚</div><div><div class="stat-val">12</div><div class="stat-label">Lecciones</div></div></div>
+          <div class="stat"><div class="stat-icon">⏱️</div><div><div class="stat-val">4.5h</div><div class="stat-label">Duración</div></div></div>
+          <div class="stat"><div class="stat-icon">🎯</div><div><div class="stat-val">85%</div><div class="stat-label">Completado</div></div></div>
+          <div class="stat"><div class="stat-icon">🔧</div><div><div class="stat-val">3</div><div class="stat-label">Proyectos</div></div></div>
+        </div>
+        <div class="grid">
+          <div class="card" onclick="alert('Lección 1: Introducción al STM32N6')">
+            <h3>🖥️ Introducción al STM32N6</h3>
+            <p>Arquitectura de la serie, diferencias con STM32H7, capacidades Neural-ART y NPU integrada.</p>
+            <span class="badge b-green">Básico | 25 min</span>
+          </div>
+          <div class="card" onclick="alert('Lección 2: Entorno de Desarrollo')">
+            <h3>⚙️ Entorno de Desarrollo</h3>
+            <p>STM32CubeIDE, STM32CubeMX, configuración de toolchains y depuración ST-Link.</p>
+            <span class="badge b-green">Básico | 35 min</span>
+          </div>
+          <div class="card" onclick="alert('Lección 3: GPIO Avanzados')">
+            <h3>🔌 GPIO Avanzados y Timers</h3>
+            <p>Configuración de pines, modos alternativos, PWM alta resolución, capture/compare.</p>
+            <span class="badge b-orange">Intermedio | 45 min</span>
+          </div>
+          <div class="card" onclick="alert('Lección 4: Interrupciones y NVIC')">
+            <h3>⚡ Interrupciones y NVIC</h3>
+            <p>Prioridades, preemption, latency, manejo de excepciones en tiempo real.</p>
+            <span class="badge b-orange">Intermedio | 40 min</span>
+          </div>
+          <div class="card" onclick="alert('Lección 5: DMA y Memoria')">
+            <h3>💾 DMA y Memoria</h3>
+            <p>Transferencias directas, configuración de canales, double-buffering.</p>
+            <span class="badge b-orange">Intermedio | 50 min</span>
+          </div>
+          <div class="card" onclick="alert('Lección 6: Clock y Power')">
+            <h3>⏰ Clock y Power Management</h3>
+            <p>PLL, HSE, LSE, modos de bajo consumo, gestión de energía industrial.</p>
+            <span class="badge b-blue">Avanzado | 55 min</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SENSORES -->
+      <div class="page" id="sensores">
+        <h1>Sensores Industriales</h1>
+        <p>Integración de sensores analógicos y digitales: ADC de alta resolución, 4-20mA, I2C/SPI, calibración y filtrado.</p>
+        <div class="stats">
+          <div class="stat"><div class="stat-icon">📡</div><div><div class="stat-val">8</div><div class="stat-label">Lecciones</div></div></div>
+          <div class="stat"><div class="stat-icon">⏱️</div><div><div class="stat-val">3.2h</div><div class="stat-label">Duración</div></div></div>
+          <div class="stat"><div class="stat-icon">🎯</div><div><div class="stat-val">30%</div><div class="stat-label">Completado</div></div></div>
+        </div>
+        <div class="grid">
+          <div class="card" onclick="alert('Lección 1: ADC de 16 bits')"><h3>📡 ADC de 16 bits</h3><p>Oversampling, calibración, compensación térmica, resolución efectiva.</p><span class="badge b-orange">Intermedio | 40 min</span></div>
+          <div class="card" onclick="alert('Lección 2: Sensores 4-20mA')"><h3>🔋 Loop 4-20mA</h3><p>Conversión de corriente, shunts, aislamiento galvánico, protección.</p><span class="badge b-orange">Intermedio | 35 min</span></div>
+          <div class="card" onclick="alert('Lección 3: I2C/SPI Digital')"><h3>🔌 I2C/SPI Digital</h3><p>DHT22, BME280, MPU6050, protocolos, direccionamiento, timing.</p><span class="badge b-orange">Intermedio | 45 min</span></div>
+          <div class="card" onclick="alert('Lección 4: Acelerómetros MEMS')"><h3>📳 Acelerómetros MEMS</h3><p>ADXL345, detección de vibración, análisis FFT, mantenimiento predictivo.</p><span class="badge b-blue">Avanzado | 50 min</span></div>
+          <div class="card" onclick="alert('Lección 5: Filtros Digitales')"><h3>🎚️ Filtros Digitales</h3><p>FIR, IIR, Kalman, eliminación de ruido en señales industriales.</p><span class="badge b-blue">Avanzado | 60 min</span></div>
+          <div class="card" onclick="alert('Lección 6: RTD y Termopares')"><h3>🌡️ RTD y Termopares</h3><p>PT100, PT1000, tipos K/J/T, linealización, referencia fría.</p><span class="badge b-orange">Intermedio | 40 min</span></div>
+        </div>
+      </div>
+
+      <!-- COMUNICACIONES -->
+      <div class="page" id="comunicaciones">
+        <h1>Comunicaciones Industriales</h1>
+        <p>Protocolos de campo y Ethernet industrial: Modbus, CANopen, MQTT, OPC-UA para arquitecturas IIoT.</p>
+        <div class="stats">
+          <div class="stat"><div class="stat-icon">🔌</div><div><div class="stat-val">10</div><div class="stat-label">Lecciones</div></div></div>
+          <div class="stat"><div class="stat-icon">⏱️</div><div><div class="stat-val">5.0h</div><div class="stat-label">Duración</div></div></div>
+          <div class="stat"><div class="stat-icon">🎯</div><div><div class="stat-val">10%</div><div class="stat-label">Completado</div></div></div>
+        </div>
+        <div class="grid">
+          <div class="card" onclick="alert('Lección 1: Modbus RTU')"><h3>🔌 Modbus RTU</h3><p>Maestro/esclavo, tramas, CRC, mapeo de registros, polling cíclico.</p><span class="badge b-orange">Intermedio | 50 min</span></div>
+          <div class="card" onclick="alert('Lección 2: Modbus TCP')"><h3>🌐 Modbus TCP</h3><p>Encapsulado en Ethernet, gateways, diagnóstico de tramas con Wireshark.</p><span class="badge b-orange">Intermedio | 45 min</span></div>
+          <div class="card" onclick="alert('Lección 3: CANopen')"><h3>🚌 CANopen</h3><p>Objeto diccionario, PDO, SDO, NMT, configuración de nodos.</p><span class="badge b-blue">Avanzado | 55 min</span></div>
+          <div class="card" onclick="alert('Lección 4: MQTT')"><h3>📡 MQTT</h3><p>Broker, topics, QoS, TLS 1.3, implementación segura para IIoT.</p><span class="badge b-orange">Intermedio | 40 min</span></div>
+          <div class="card" onclick="alert('Lección 5: OPC-UA')"><h3>🔒 OPC-UA</h3><p>Servidor compacto, namespace, suscripciones, seguridad integrada.</p><span class="badge b-blue">Avanzado | 60 min</span></div>
+          <div class="card" onclick="alert('Lección 6: EtherCAT')"><h3>⚡ EtherCAT</h3><p>Determinismo, ciclo de tiempo, configuración de esclavos, diagnóstico.</p><span class="badge b-blue">Avanzado | 70 min</span></div>
+        </div>
+      </div>
+
+      <!-- EDGE AI -->
+      <div class="page" id="edgeai">
+        <h1>Edge AI con Neural-ART</h1>
+        <p>Despliegue de machine learning en STM32N6: TensorFlow Lite, cuantización, NPU, visión industrial.</p>
+        <div class="stats">
+          <div class="stat"><div class="stat-icon">🧠</div><div><div class="stat-val">6</div><div class="stat-label">Lecciones</div></div></div>
+          <div class="stat"><div class="stat-icon">⏱️</div><div><div class="stat-val">6.5h</div><div class="stat-label">Duración</div></div></div>
+          <div class="stat"><div class="stat-icon">🎯</div><div><div class="stat-val">0%</div><div class="stat-label">Completado</div></div></div>
+        </div>
+        <div class="grid">
+          <div class="card" onclick="alert('Lección 1: Introducción Edge AI')"><h3>🧠 Introducción Edge AI</h3><p>Cloud vs edge, latencia, privacidad, costos, casos de uso industrial.</p><span class="badge b-green">Básico | 30 min</span></div>
+          <div class="card" onclick="alert('Lección 2: TensorFlow Lite')"><h3>📊 TensorFlow Lite</h3><p>Entrenamiento, conversión .tflite, optimización de modelo para microcontroladores.</p><span class="badge b-orange">Intermedio | 55 min</span></div>
+          <div class="card" onclick="alert('Lección 3: Cuantización INT8')"><h3>⚡ Cuantización INT8</h3><p>Post-training quantization, aware training, precisión vs tamaño.</p><span class="badge b-blue">Avanzado | 65 min</span></div>
+          <div class="card" onclick="alert('Lección 4: STM32Cube.AI')"><h3>🛠️ STM32Cube.AI</h3><p>Code generation, análisis de memoria, validación en target, benchmarking.</p><span class="badge b-blue">Avanzado | 70 min</span></div>
+          <div class="card" onclick="alert('Lección 5: Visión Industrial')"><h3>👁️ Visión Industrial</h3><p>Detección de objetos, clasificación, segmentación, cámaras OV7670.</p><span class="badge b-blue">Avanzado | 80 min</span></div>
+          <div class="card" onclick="alert('Lección 6: Detección de Anomalías')"><h3>🏭 Detección de Anomalías</h3><p>Autoencoders, isolation forest, despliegue en planta, alertas tempranas.</p><span class="badge b-blue">Avanzado | 75 min</span></div>
+        </div>
+      </div>
+
+      <!-- SIMULADOR SENSORES -->
+      <div class="page" id="simsensores">
+        <h1>Simulador de Sensores</h1>
+        <p>Emulación de sensores industriales conectados al STM32N6. Datos realistas para pruebas offline.</p>
+        <div class="sim-box">
+          <h3>🌡️ Sensores Ambientales</h3>
+          <div class="sensor-grid">
+            <div class="sensor-card"><div class="sensor-label">Temperatura</div><div class="sensor-val" id="t1">24.5°C</div><div class="sensor-label">LM35</div></div>
+            <div class="sensor-card"><div class="sensor-label">Humedad</div><div class="sensor-val" id="t2">58%</div><div class="sensor-label">DHT22</div></div>
+            <div class="sensor-card"><div class="sensor-label">Presión</div><div class="sensor-val" id="t3">1013 hPa</div><div class="sensor-label">BMP280</div></div>
+            <div class="sensor-card"><div class="sensor-label">Luminosidad</div><div class="sensor-val" id="t4">450 lux</div><div class="sensor-label">BH1750</div></div>
+          </div>
+        </div>
+        <div class="sim-box">
+          <h3>⚡ Sensores de Proceso</h3>
+          <div class="sensor-grid">
+            <div class="sensor-card"><div class="sensor-label">Corriente 4-20mA</div><div class="sensor-val" id="t5">12.4 mA</div><div class="sensor-label">ACS712</div></div>
+            <div class="sensor-card"><div class="sensor-label">Vibración</div><div class="sensor-val" id="t6">2.1 mm/s</div><div class="sensor-label">ADXL345</div></div>
+            <div class="sensor-card"><div class="sensor-label">Distancia</div><div class="sensor-val" id="t7">1250 mm</div><div class="sensor-label">Ultrasonico</div></div>
+            <div class="sensor-card"><div class="sensor-label">Gas CO2</div><div class="sensor-val" id="t8">420 ppm</div><div class="sensor-label">MQ-135</div></div>
+          </div>
+          <button class="btn" onclick="updateSensors()">🔄 Actualizar Lecturas</button>
+          <div class="console" id="clog1">[SISTEMA] Simulador iniciado... 8 canales activos
+[INFO] Frecuencia: 1Hz simulado
+</div>
+        </div>
+      </div>
+
+      <!-- SIMULADOR MODBUS -->
+      <div class="page" id="simmodbus">
+        <h1>Simulador Modbus RTU</h1>
+        <p>Emulador de esclavo Modbus RTU vía UART al STM32N6.</p>
+        <div class="sim-box">
+          <p style="color:var(--text2);margin-bottom:12px">UART: 9600 baudios | Paridad: Ninguna | Datos: 8 | Stop: 1 | Esclavo: <strong style="color:var(--orange)">0x01</strong></p>
+          <div class="sensor-grid">
+            <div class="sensor-card"><div class="sensor-label">Reg 40001</div><div class="sensor-val" id="m1">1245</div><div class="sensor-label">Temp x10</div></div>
+            <div class="sensor-card"><div class="sensor-label">Reg 40002</div><div class="sensor-val" id="m2">0580</div><div class="sensor-label">Hum x10</div></div>
+            <div class="sensor-card"><div class="sensor-label">Reg 40003</div><div class="sensor-val" id="m3">0001</div><div class="sensor-label">Bomba ON</div></div>
+            <div class="sensor-card"><div class="sensor-label">Reg 40004</div><div class="sensor-val" id="m4">8750</div><div class="sensor-label">Presión x100</div></div>
+          </div>
+          <button class="btn" onclick="updateModbus()">🔄 Actualizar Registros</button>
+          <div class="console" id="clog2">[MB_SLAVE] Inicializado en dirección 0x01
+[MB_SLAVE] UART: 9600,N,8,1
+[MB_SLAVE] Esperando polling del maestro...
+</div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="page" id="dashboard">
+        <h1>Dashboard SCADA</h1>
+        <p>Panel de control industrial con datos en tiempo real de la planta simulada.</p>
+        <div class="sensor-grid" style="margin-bottom:20px">
+          <div class="sensor-card"><div class="sensor-label">Temperatura</div><div class="sensor-val" id="d1">24.5°C</div></div>
+          <div class="sensor-card"><div class="sensor-label">Humedad</div><div class="sensor-val" id="d2">58%</div></div>
+          <div class="sensor-card"><div class="sensor-label">Corriente</div><div class="sensor-val" id="d3">12.4 mA</div></div>
+          <div class="sensor-card"><div class="sensor-label">Alarmas</div><div class="sensor-val" id="d4" style="color:#ff1744">0</div></div>
+        </div>
+        <div class="sim-box">
+          <h3>📈 Tendencias (últimas 20 lecturas)</h3>
+          <div class="trend" id="trendBox"></div>
+        </div>
+        <button class="btn" onclick="updateDashboard()">🔄 Refrescar Datos</button>
+      </div>
+
+    </div>
+    <div class="footer">
+      <div>🟢 Conectado | STM32N6 Academy</div>
+      <div>v1.0.0 | GitHub Pages</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const titles={fundamentos:'Fundamentos STM32N6',sensores:'Sensores Industriales',comunicaciones:'Comunicaciones Industriales',edgeai:'Edge AI con Neural-ART',simsensores:'Simulador de Sensores',simmodbus:'Simulador Modbus RTU',dashboard:'Dashboard SCADA'};
+  document.getElementById('pageTitle').textContent=titles[id];
+  if(window.innerWidth<=768)document.getElementById('sidebar').classList.remove('open');
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');}
+function updateSensors(){
+  document.getElementById('t1').textContent=(20+Math.random()*10).toFixed(1)+'°C';
+  document.getElementById('t2').textContent=(40+Math.random()*40).toFixed(0)+'%';
+  document.getElementById('t3').textContent=(1000+Math.random()*30).toFixed(0)+' hPa';
+  document.getElementById('t4').textContent=(100+Math.random()*900).toFixed(0)+' lux';
+  document.getElementById('t5').textContent=(4+Math.random()*16).toFixed(1)+' mA';
+  document.getElementById('t6').textContent=(0.5+Math.random()*5).toFixed(1)+' mm/s';
+  document.getElementById('t7').textContent=(500+Math.random()*2000).toFixed(0)+' mm';
+  document.getElementById('t8').textContent=(300+Math.random()*300).toFixed(0)+' ppm';
+  document.getElementById('clog1').textContent+='\n['+new Date().toLocaleTimeString()+'] Lecturas actualizadas';
+}
+function updateModbus(){
+  document.getElementById('m1').textContent=(1000+Math.random()*500).toFixed(0).padStart(4,'0');
+  document.getElementById('m2').textContent=(400+Math.random()*300).toFixed(0).padStart(4,'0');
+  document.getElementById('m3').textContent=Math.random()>0.5?'0001':'0000';
+  document.getElementById('m4').textContent=(8000+Math.random()*1000).toFixed(0).padStart(4,'0');
+  document.getElementById('clog2').textContent+='\n['+new Date().toLocaleTimeString()+'] Registros actualizados';
+}
+function updateDashboard(){
+  document.getElementById('d1').textContent=(20+Math.random()*10).toFixed(1)+'°C';
+  document.getElementById('d2').textContent=(40+Math.random()*40).toFixed(0)+'%';
+  document.getElementById('d3').textContent=(4+Math.random()*16).toFixed(1)+' mA';
+  var alarm=Math.random()>0.8?'1':'0';
+  document.getElementById('d4').textContent=alarm;
+  document.getElementById('d4').style.color=alarm=='1'?'#ff1744':'#00c853';
+  var bars='';
+  for(var i=0;i<20;i++){var h=20+Math.random()*80;var c=h>80?'#ff6b35':'#00c853';bars+='<div class="trend-bar" style="height:'+h+'px;background:'+c+'"></div>';}
+  document.getElementById('trendBox').innerHTML=bars;
+}
+updateDashboard();
+</script>
+
+</body>
+</html>
