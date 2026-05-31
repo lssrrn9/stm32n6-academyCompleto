@@ -9,7 +9,6 @@
 /* ===== RESET ===== */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#252525;--border:#333;--text:#e0e0e0;--text2:#a0a0a0;--orange:#ff6b35;--green:#00c853;--blue:#2979ff;--danger:#ff1744}
-html{scroll-behavior:smooth}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
 /* ===== LAYOUT ===== */
@@ -21,7 +20,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .logo{height:64px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid var(--border);gap:12px}
 .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--orange),var(--green));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem}
 .nav{padding:16px 12px}
-.nav-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:10px;text-decoration:none;color:var(--text);margin-bottom:4px;transition:.2s}
+.nav-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:10px;cursor:pointer;margin-bottom:4px;text-decoration:none;color:var(--text);border:none;background:none;width:100%;font-size:inherit;font-family:inherit;transition:.2s}
 .nav-item:hover{background:var(--bg3)}
 .nav-item.active{background:rgba(255,107,53,.12);color:var(--orange);border-left:3px solid var(--orange)}
 .nav-icon{font-size:1.1rem;width:22px;text-align:center}
@@ -32,11 +31,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* ===== CONTENT ===== */
 .content{padding:24px;flex:1}
-.section{display:none;padding-bottom:40px}
-.section:target{display:block;animation:fade .4s}
+.page{display:none}
+.page.active{display:block;animation:fade .4s}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-#fundamentos{display:block}
-#fundamentos:target~#sensores,#fundamentos:target~#comunicaciones,#fundamentos:target~#edgeai,#fundamentos:target~#simsensores,#fundamentos:target~#simmodbus,#fundamentos:target~#dashboard{display:none}
 
 h1{font-size:1.6rem;margin-bottom:8px;background:linear-gradient(90deg,var(--text),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
@@ -79,6 +76,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
 @media(max-width:768px){.sidebar{width:100%;position:fixed;transform:translateX(-100%);transition:.3s}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.mobile-btn{display:flex!important}.grid{grid-template-columns:1fr}}
 .mobile-btn{display:none;width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);align-items:center;justify-content:center;cursor:pointer;margin-right:12px;font-size:1.2rem}
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -87,14 +85,14 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
   <aside class="sidebar" id="sidebar">
     <div class="logo"><div class="logo-icon">N6</div><div style="font-weight:700">STM32N6 Academy</div></div>
     <nav class="nav">
-      <a class="nav-item active" href="#fundamentos"><span class="nav-icon">📐</span>Fundamentos</a>
-      <a class="nav-item" href="#sensores"><span class="nav-icon">📡</span>Sensores</a>
-      <a class="nav-item" href="#comunicaciones"><span class="nav-icon">🔌</span>Comunicaciones</a>
-      <a class="nav-item" href="#edgeai"><span class="nav-icon">🧠</span>Edge AI</a>
+      <button class="nav-item active" data-target="fundamentos"><span class="nav-icon">📐</span>Fundamentos</button>
+      <button class="nav-item" data-target="sensores"><span class="nav-icon">📡</span>Sensores</button>
+      <button class="nav-item" data-target="comunicaciones"><span class="nav-icon">🔌</span>Comunicaciones</button>
+      <button class="nav-item" data-target="edgeai"><span class="nav-icon">🧠</span>Edge AI</button>
       <div style="margin:12px 0;border-top:1px solid var(--border)"></div>
-      <a class="nav-item" href="#simsensores"><span class="nav-icon">🧪</span>Sim. Sensores</a>
-      <a class="nav-item" href="#simmodbus"><span class="nav-icon">🔧</span>Sim. Modbus</a>
-      <a class="nav-item" href="#dashboard"><span class="nav-icon">📊</span>Dashboard</a>
+      <button class="nav-item" data-target="simsensores"><span class="nav-icon">🧪</span>Sim. Sensores</button>
+      <button class="nav-item" data-target="simmodbus"><span class="nav-icon">🔧</span>Sim. Modbus</button>
+      <button class="nav-item" data-target="dashboard"><span class="nav-icon">📊</span>Dashboard</button>
     </nav>
   </aside>
 
@@ -102,7 +100,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
     <div class="header">
       <div style="display:flex;align-items:center">
         <button class="mobile-btn" id="menuBtn">☰</button>
-        <div class="header-title">STM32N6 Industrial Academy</div>
+        <div class="header-title" id="headerTitle">Fundamentos STM32N6</div>
       </div>
       <div style="font-size:.75rem;color:#666">v1.0.0 | GitHub Pages</div>
     </div>
@@ -110,7 +108,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
     <div class="content">
 
       <!-- ===== FUNDAMENTOS ===== -->
-      <div class="section" id="fundamentos">
+      <div class="page active" id="page-fundamentos">
         <h1>Fundamentos STM32N6</h1>
         <p>Arquitectura Cortex-M55, periféricos esenciales, herramientas de desarrollo y primeros pasos con el ecosistema ST.</p>
         <div class="stats">
@@ -130,7 +128,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
       </div>
 
       <!-- ===== SENSORES ===== -->
-      <div class="section" id="sensores">
+      <div class="page" id="page-sensores">
         <h1>Sensores Industriales</h1>
         <p>Integración de sensores analógicos y digitales: ADC de alta resolución, 4-20mA, I2C/SPI, calibración y filtrado.</p>
         <div class="stats">
@@ -149,7 +147,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
       </div>
 
       <!-- ===== COMUNICACIONES ===== -->
-      <div class="section" id="comunicaciones">
+      <div class="page" id="page-comunicaciones">
         <h1>Comunicaciones Industriales</h1>
         <p>Protocolos de campo y Ethernet industrial: Modbus, CANopen, MQTT, OPC-UA para arquitecturas IIoT.</p>
         <div class="stats">
@@ -168,7 +166,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
       </div>
 
       <!-- ===== EDGE AI ===== -->
-      <div class="section" id="edgeai">
+      <div class="page" id="page-edgeai">
         <h1>Edge AI con Neural-ART</h1>
         <p>Despliegue de machine learning en STM32N6: TensorFlow Lite, cuantización, NPU, visión industrial.</p>
         <div class="stats">
@@ -187,7 +185,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
       </div>
 
       <!-- ===== SIMULADOR SENSORES ===== -->
-      <div class="section" id="simsensores">
+      <div class="page" id="page-simsensores">
         <h1>Simulador de Sensores</h1>
         <p>Emulación de sensores industriales conectados al STM32N6. Datos realistas para pruebas offline.</p>
         <div class="sim-box">
@@ -215,7 +213,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
       </div>
 
       <!-- ===== SIMULADOR MODBUS ===== -->
-      <div class="section" id="simmodbus">
+      <div class="page" id="page-simmodbus">
         <h1>Simulador Modbus RTU</h1>
         <p>Emulador de esclavo Modbus RTU vía UART al STM32N6.</p>
         <div class="sim-box">
@@ -235,7 +233,7 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
       </div>
 
       <!-- ===== DASHBOARD ===== -->
-      <div class="section" id="dashboard">
+      <div class="page" id="page-dashboard">
         <h1>Dashboard SCADA</h1>
         <p>Panel de control industrial con datos en tiempo real de la planta simulada.</p>
         <div class="sensor-grid" style="margin-bottom:20px">
@@ -260,29 +258,67 @@ p{color:var(--text2);line-height:1.6;margin-bottom:16px;max-width:700px}
 </div>
 
 <script>
-/* ===== NAVEGACIÓN POR HASH (seguro para GitHub Pages) ===== */
+/* ===== NAVEGACIÓN ===== */
 document.addEventListener('DOMContentLoaded', function() {
-  // Mobile menu
+  var navItems = document.querySelectorAll('.nav-item');
+  var pages = document.querySelectorAll('.page');
+  var headerTitle = document.getElementById('headerTitle');
   var menuBtn = document.getElementById('menuBtn');
   var sidebar = document.getElementById('sidebar');
+
+  var titles = {
+    fundamentos: 'Fundamentos STM32N6',
+    sensores: 'Sensores Industriales',
+    comunicaciones: 'Comunicaciones Industriales',
+    edgeai: 'Edge AI con Neural-ART',
+    simsensores: 'Simulador de Sensores',
+    simmodbus: 'Simulador Modbus RTU',
+    dashboard: 'Dashboard SCADA'
+  };
+
+  function showPage(targetId) {
+    // Hide all pages
+    pages.forEach(function(page) {
+      page.classList.remove('active');
+    });
+    // Show target page
+    var targetPage = document.getElementById('page-' + targetId);
+    if (targetPage) {
+      targetPage.classList.add('active');
+    }
+    // Update nav active state
+    navItems.forEach(function(item) {
+      item.classList.remove('active');
+      if (item.getAttribute('data-target') === targetId) {
+        item.classList.add('active');
+      }
+    });
+    // Update header title
+    if (titles[targetId]) {
+      headerTitle.textContent = titles[targetId];
+    }
+    // Close mobile sidebar
+    if (window.innerWidth <= 768) {
+      sidebar.classList.remove('open');
+    }
+    // Scroll to top
+    window.scrollTo(0, 0);
+  }
+
+  // Add click listeners to nav items
+  navItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      var target = this.getAttribute('data-target');
+      showPage(target);
+    });
+  });
+
+  // Mobile menu toggle
   if (menuBtn) {
     menuBtn.addEventListener('click', function() {
       sidebar.classList.toggle('open');
     });
   }
-
-  // Highlight nav item based on hash
-  function updateNav() {
-    var hash = window.location.hash || '#fundamentos';
-    document.querySelectorAll('.nav-item').forEach(function(item) {
-      item.classList.remove('active');
-      if (item.getAttribute('href') === hash) {
-        item.classList.add('active');
-      }
-    });
-  }
-  window.addEventListener('hashchange', updateNav);
-  updateNav();
 
   /* ===== SIMULADOR SENSORES ===== */
   var btnSensors = document.getElementById('btn-sensors');
